@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 
-import pygame
-import sys
-import random
 import os.path
+import random
+import sys
+
+import pygame
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -27,6 +28,7 @@ class GameState:
 	speed_multiplier = 1
 	paused = False
 	game_over = False
+	keylock = False
 
 
 class Food:
@@ -51,7 +53,9 @@ class Snake:
 			self.direction == 'UP' and direction_input == 'DOWN':
 				pass
 		else:
-			self.direction = direction_input
+			if GameState.keylock is False:
+				self.direction = direction_input
+				GameState.keylock = True
 
 	def embiggen(self):
 		self.segments.append(self.segments[-1])
@@ -93,8 +97,8 @@ def snake_update():
 		x_mult = 1
 		y_mult = 0
 
-	new_snek = []
-	new_snek.append([snek.segments[0][0] + (10 * x_mult), snek.segments[0][1] + (10 * y_mult)])
+	new_snek = [[snek.segments[0][0] + (10 * x_mult), snek.segments[0][1] + (10 * y_mult)]]
+	GameState.keylock = False
 	for i in snek.segments[:-1]:
 		new_snek.append(i)
 	snek.segments = new_snek
