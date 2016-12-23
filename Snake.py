@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 
-import os.path
-import random
 import sys
-
+import random
 import pygame
+import os.path
+
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
