@@ -8,4 +8,4 @@ Because why not?
 
 Press 'r' to restart when necessary.
 
-Everything will error out horribly if the sounds aren't in the `resources` directory and/or believe hardcoding things is a bad idea.
+Everything will error out horribly if the requisite media files aren't in the `resources` directory and/or you believe hardcoding things is a bad idea.
