@@ -4,6 +4,7 @@ Because why not?
 ## Currently includes:
 * Snake
 * Tic Tac Toe
+* A 2D jumping runner thingy type someshit
 
 Press 'r' to restart when necessary.
 
