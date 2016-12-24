@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
+import time
 import pygame
 import random
-import time
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -24,9 +24,9 @@ clock = pygame.time.Clock()
 
 class Options:
 	jump_time = .25  # Either side of the jump. Total jump time = jump_time * 2
-	gravity = 2000  # Increased gravity and shorter jump time > more displacement
+	gravity = 2700  # Increased gravity and shorter jump time > more displacement
 	groundlevel = DISPLAYHEIGHT - 100
-	initial_speed = 3
+	initial_speed = 4
 
 
 class GameState:
@@ -45,10 +45,9 @@ class GameState:
 class Runner(pygame.sprite.Sprite):
 	def __init__(self):
 		pygame.sprite.Sprite.__init__(self)
-		width = 20
-		height = 30
 		self.image = pygame.image.load('resources/supes_small.png').convert_alpha()
 		self.rect = self.image.get_rect()
+		self.mask = pygame.mask.from_surface(self.image)  # The image mask allows for better collision handling
 
 		# Put the sprite @ ground level
 		self.rect.x = 20
@@ -81,46 +80,45 @@ class Runner(pygame.sprite.Sprite):
 class Tree(pygame.sprite.Sprite):
 	def __init__(self, offset):
 		pygame.sprite.Sprite.__init__(self)
-		width = 5
-		height = 35
-		self.image = pygame.Surface([width, height])
-		self.image.fill(BLACK)
+		self.image = pygame.image.load('resources/kryptonite_small.png').convert_alpha()
 		self.offset = offset
 		self.rect = self.image.get_rect()
+		self.mask = pygame.mask.from_surface(self.image)
 
 		# Put the sprite @ ground level
 		self.rect.x = 800 - self.offset
-		self.rect.y = Options.groundlevel - 5
+		self.rect.y = Options.groundlevel - 25
 
 	def update(self):
 		speed_multiplier = GameState.score // 500
 		GameState.speed = Options.initial_speed + .5 * speed_multiplier
 		self.rect.x += -1 * GameState.speed
-		if self.rect.x < 0:
+		if self.rect.center[0] < 0:  # Remove the sprite when the x coordinate of the center crosses the left screen edge
 			self.kill()
 
 
-def farmer():
+def lex_luthor():
 	time_delta = time.time() - GameState.last_tree_gen
 	if time_delta * GameState.speed < 15:
 		return
 
-	number_of_trees = random.randrange(2, 5)
+	number_of_crystals = random.randrange(2, 5)
 
 	offset = 0
-	for i in range(number_of_trees):
-		new_tree = Tree(offset)
-		all_sprites_list.add(new_tree)
-		obstacles.add(new_tree)
-		offset += 10
+	for i in range(number_of_crystals):
+		new_crystal = Tree(offset)
+		all_sprites_list.add(new_crystal)
+		obstacles.add(new_crystal)
+		offset += 15
 
 	GameState.last_tree_gen = time.time()
 
 
 def collisions():
-	collision_list = pygame.sprite.spritecollide(stickdude, obstacles, False)
-	if collision_list:
-		GameState.game_over = True
+	for i in obstacles:
+		collision_list = pygame.sprite.collide_mask(superdude, i)
+		if collision_list:
+			GameState.game_over = True
 
 
 def score():
@@ -140,28 +138,25 @@ def score():
 		font = pygame.font.SysFont('calibri', 20, bold=True)
 		text = font.render(str(int(GameState.highscore)), True, BLUE)
 		x_c = len(str(GameState.highscore))
-		text_rect = text.get_rect(center=(750 - x_c, 10))
+		text_rect = text.get_rect(center=(740 - x_c, 10))
 		displaysurface.blit(text, text_rect)
 
 
-def start():
+def main():
 	# Initialize first "tree" and the "runner"
-	global stickdude, shitty_tree, all_sprites_list, obstacles
+	# I'm using global variables because it makes resetting the game easier
+	global superdude, kryptonite, all_sprites_list, obstacles
 
-	stickdude = Runner()
-	shitty_tree = Tree(5)
+	superdude = Runner()
+	kryptonite = Tree(5)
 
 	all_sprites_list = pygame.sprite.Group()
 	obstacles = pygame.sprite.Group()
 
-	all_sprites_list.add(stickdude)
-	all_sprites_list.add(shitty_tree)
-	obstacles.add(shitty_tree)
+	all_sprites_list.add(superdude)
+	all_sprites_list.add(kryptonite)
+	obstacles.add(kryptonite)
 
-	main()
-
-
-def main():
 	while True:
 		if GameState.game_over is False:
 			for event in pygame.event.get():
@@ -172,7 +167,7 @@ def main():
 							GameState.keylock = True
 							GameState.jump_start_time = time.time()
 
-					if event.key == pygame.K_ESCAPE:
+					if event.key == pygame.K_ESCAPE or event.key == pygame.K_q:
 						pygame.quit()
 						exit()
 					if event.key == pygame.K_r:
@@ -183,7 +178,7 @@ def main():
 					exit()
 
 			displaysurface.fill(WHITE)  # This is needed because otherwise the update method leaves a trail
-			farmer()
+			lex_luthor()
 			all_sprites_list.update()
 			score()
 			collisions()
@@ -204,7 +199,7 @@ def main():
 					if event.key == pygame.K_r or event.key == pygame.K_RETURN:
 						GameState.game_over = False
 						GameState.score = 0
-						start()
+						main()
 
 					if event.key == pygame.K_ESCAPE or event.key == pygame.K_q:
 						pygame.quit()
@@ -220,4 +215,4 @@ def main():
 
 
 if __name__ == '__main__':
-	start()
+	main()
