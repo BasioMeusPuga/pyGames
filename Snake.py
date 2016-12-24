@@ -37,8 +37,8 @@ class Food:
 		self.foody = 105
 
 	def new_food(self):
-		self.foodx = random.randrange(5, 395, 10)
-		self.foody = random.randrange(5, 395, 10)
+		self.foodx = random.randrange(15, 386, 10)
+		self.foody = random.randrange(15, 386, 10)
 
 
 class Snake:
