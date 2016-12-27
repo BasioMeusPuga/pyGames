@@ -24,7 +24,7 @@ point = pygame.mixer.Sound('resources/laser_point.wav')
 
 
 class Options:
-	initial_speed = 1.5
+	initial_speed = 2.5
 
 
 class GameState:
@@ -73,6 +73,9 @@ class Ball(pygame.sprite.Sprite):
 		self.x_speed = random.choice([1, -1])
 		self.y_speed = random.choice([1, -1])
 
+		GameState.speed = Options.initial_speed
+		GameState.collisions = 0
+
 	def update(self):
 		# Check for collision with the upper/lower wall
 		if self.rect.y <= 0 or self.rect.y >= DISPLAYHEIGHT - 15:
@@ -113,27 +116,23 @@ class Ball(pygame.sprite.Sprite):
 		GameState.speed = Options.initial_speed + 1 * speed_increase
 
 
-def score():
-	font = pygame.font.SysFont('calibri', 20, bold=False)
-	text = font.render(str(GameState.player1_score), True, WHITE)
-	x_c = len(str(GameState.player1_score))
-	text_rect = text.get_rect(center=(285 - x_c, 10))
+def make_text(displaytext, size, x_center, y_center, color):
+	font = pygame.font.SysFont('calibri', size, bold=False)
+	text = font.render(str(displaytext), True, color)
+	x_c = len(str(displaytext))
+	text_rect = text.get_rect(center=(x_center - x_c, y_center))
 	displaysurface.blit(text, text_rect)
 
-	text = font.render(str(GameState.player2_score), True, WHITE)
-	x_c = len(str(GameState.player1_score))
-	text_rect = text.get_rect(center=(315 - x_c, 10))
-	displaysurface.blit(text, text_rect)
+
+def score():
+	make_text(GameState.player1_score, 20, 285, 10, WHITE)
+	make_text(GameState.player2_score, 20, 315, 10, WHITE)
 
 
 def first_run():
-	font = pygame.font.SysFont('calibri', 80, bold=False)
-	text = font.render(str(GameState.countdown), True, WHITE)
-	x_c = len(str(GameState.countdown))
-	text_rect = text.get_rect(center=(300 - x_c, DISPLAYHEIGHT - 40))
-	displaysurface.blit(text, text_rect)
+	make_text(GameState.countdown, 80, 300, DISPLAYHEIGHT - 40, WHITE)
 	GameState.countdown -= 1
-	pygame.time.wait(1000)
+	pygame.time.wait(800)
 
 
 def main():
