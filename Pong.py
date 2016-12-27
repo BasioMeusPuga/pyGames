@@ -106,14 +106,14 @@ class Ball(pygame.sprite.Sprite):
 			self.rect.x += self.x_speed * round(GameState.speed)
 			self.rect.y += self.y_speed * round(GameState.speed)
 
+		# Increase speed by .5 for every 3 collisions
+		speed_increase = (GameState.collisions // 3 + 1) / 2
+		GameState.speed = Options.initial_speed + 1 * speed_increase
+
 	def collision_common(self):
 		self.x_speed *= -1
 		GameState.collisions += 1
 		lightsaber.play()
-
-		# Increase speed by .5 for every 3 collisions
-		speed_increase = (GameState.collisions // 3 + 1) / 2
-		GameState.speed = Options.initial_speed + 1 * speed_increase
 
 
 def make_text(displaytext, size, x_center, y_center, color):
