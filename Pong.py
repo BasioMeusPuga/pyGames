@@ -20,6 +20,7 @@ displaysurface.convert_alpha()
 pygame.display.set_caption('Ghatiya Pong')
 clock = pygame.time.Clock()
 lightsaber = pygame.mixer.Sound('resources/lightsaber.wav')
+point = pygame.mixer.Sound('resources/laser_point.wav')
 
 
 class Options:
@@ -32,6 +33,7 @@ class GameState:
 	player2_score = 0
 	collisions = 0
 	speed = Options.initial_speed
+	countdown = 3
 
 
 class Paddle(pygame.sprite.Sprite):
@@ -60,6 +62,7 @@ class Paddle(pygame.sprite.Sprite):
 class Ball(pygame.sprite.Sprite):
 	def __init__(self):
 		pygame.sprite.Sprite.__init__(self)
+		GameState.countdown = 3
 		self.image = pygame.image.load('resources/DeathStar_small.png').convert_alpha()
 		self.rect = self.image.get_rect()
 		self.mask = pygame.mask.from_surface(self.image)
@@ -71,8 +74,6 @@ class Ball(pygame.sprite.Sprite):
 		self.y_speed = random.choice([1, -1])
 
 	def update(self):
-		displaysurface.fill(BLACK)
-
 		# Check for collision with the upper/lower wall
 		if self.rect.y <= 0 or self.rect.y >= DISPLAYHEIGHT - 15:
 			self.y_speed *= -1
@@ -80,9 +81,11 @@ class Ball(pygame.sprite.Sprite):
 		# Check for collision with the left/right wall
 		if self.rect.x <= 0:
 			GameState.player2_score += 1
+			point.play()
 			self.__init__()
 		elif self.rect.x >= DISPLAYWIDTH - 15:
 			GameState.player1_score += 1
+			point.play()
 			self.__init__()
 
 		# Check for collisions with either of the paddles
@@ -96,20 +99,41 @@ class Ball(pygame.sprite.Sprite):
 			self.collision_common()
 			self.rect.x = DISPLAYWIDTH - 31
 
-		self.rect.x += self.x_speed * round(GameState.speed)
-		self.rect.y += self.y_speed * round(GameState.speed)
+		if GameState.countdown == -1:
+			self.rect.x += self.x_speed * round(GameState.speed)
+			self.rect.y += self.y_speed * round(GameState.speed)
 
 	def collision_common(self):
 		self.x_speed *= -1
 		GameState.collisions += 1
 		lightsaber.play()
 
-		# speed_increase = (GameState.collisions // 1 + 1) // 2
-		# GameState.speed = Options.initial_speed + 1 * speed_increase
+		# Increase speed by .5 for every 3 collisions
+		speed_increase = (GameState.collisions // 3 + 1) / 2
+		GameState.speed = Options.initial_speed + 1 * speed_increase
 
 
 def score():
-	pass
+	font = pygame.font.SysFont('calibri', 20, bold=False)
+	text = font.render(str(GameState.player1_score), True, WHITE)
+	x_c = len(str(GameState.player1_score))
+	text_rect = text.get_rect(center=(285 - x_c, 10))
+	displaysurface.blit(text, text_rect)
+
+	text = font.render(str(GameState.player2_score), True, WHITE)
+	x_c = len(str(GameState.player1_score))
+	text_rect = text.get_rect(center=(315 - x_c, 10))
+	displaysurface.blit(text, text_rect)
+
+
+def first_run():
+	font = pygame.font.SysFont('calibri', 80, bold=False)
+	text = font.render(str(GameState.countdown), True, WHITE)
+	x_c = len(str(GameState.countdown))
+	text_rect = text.get_rect(center=(300 - x_c, DISPLAYHEIGHT - 40))
+	displaysurface.blit(text, text_rect)
+	GameState.countdown -= 1
+	pygame.time.wait(1000)
 
 
 def main():
@@ -122,17 +146,18 @@ def main():
 	sprites.add(player1, player2, ball)
 
 	while True:
-		key_held = pygame.key.get_pressed()
+		if GameState.countdown == -1:
+			key_held = pygame.key.get_pressed()
 
-		if key_held[pygame.K_w]:
-			player1.move('UP')
-		if key_held[pygame.K_s]:
-			player1.move('DOWN')
+			if key_held[pygame.K_w]:
+				player1.move('UP')
+			if key_held[pygame.K_s]:
+				player1.move('DOWN')
 
-		if key_held[pygame.K_UP]:
-			player2.move('UP')
-		if key_held[pygame.K_DOWN]:
-			player2.move('DOWN')
+			if key_held[pygame.K_UP]:
+				player2.move('UP')
+			if key_held[pygame.K_DOWN]:
+				player2.move('DOWN')
 
 		for event in pygame.event.get():
 
@@ -147,7 +172,12 @@ def main():
 				pygame.quit()
 				exit()
 
+		displaysurface.fill(BLACK)
+		if GameState.countdown > -1:
+			first_run()
+
 		sprites.update()
+		score()
 		sprites.draw(displaysurface)
 		pygame.display.update()
 		clock.tick(60)
