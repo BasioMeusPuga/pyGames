@@ -5,6 +5,7 @@ Because why not?
 * Snake
 * Tic Tac Toe
 * A 2D jumping runner thingy type someshit
+* Deathstar Pong
 
 Press 'r' to restart when necessary.
 
